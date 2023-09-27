@@ -122,6 +122,7 @@ def calculate_angle(filename, threshold: float):
             if not any_angle_from_all:  # kids that never have angle more than threshold
                 children.add(filename)
 
+
 def split_file(filename, threshold, size, split_technique):
     with open(filename, "r") as f:
         lines = f.readlines()
@@ -270,7 +271,7 @@ def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
         decimal_value = value / 100.0
         print(decimal_value)
         split_file(filtered_file, decimal_value, split_pieces, split_technique)
-        area= recurrent_functions.calculate_area()
+        area = recurrent_functions.calculate_area()
         global processed_files
         processed_files = set()
         global children
@@ -297,6 +298,7 @@ def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
     plt.title(input_file)
 
     plt.show()
+
 
 def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique):
     results = []
@@ -350,9 +352,9 @@ def main():
     recurrent_functions.residual_analysis_methods()
     recurrent_functions.t_testing()
 
-    #decomment to see full analysis
-    #size=21
-    #analysis_bar_graphs(input_file, size, split_pieces, split_technique)
+    # decomment to see full analysis
+    # size=21
+    # analysis_bar_graphs(input_file, size, split_pieces, split_technique)
 
 
 if __name__ == "__main__":

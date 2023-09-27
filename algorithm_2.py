@@ -26,24 +26,23 @@ def finding_valleys_and_peaks(threshold, cwt):
         peaks, _ = find_peaks(y)
         valleys, _ = find_peaks(-y)
 
-    needed_points= []
+    needed_points = []
 
     for p in peaks:
-        needed_points.append(p+first_value)
+        needed_points.append(p + first_value)
 
     for v in valleys:
-        needed_points.append(v+first_value)
-
+        needed_points.append(v + first_value)
 
     if first_value not in needed_points:
         needed_points.append(first_value)
     if last_value not in needed_points:
         needed_points.append(last_value)
 
-
     needed_points = sorted(list(set(needed_points)))
     needed_points = [int(index) for index in needed_points]
     return needed_points
+
 
 def analysis_bar_graphs(input_file, width, cwt):
     analysis_bar_graph_area(input_file, width, cwt)
@@ -55,7 +54,7 @@ def analysis_bar_graph_area(input_file, width, cwt):
     for i in range(10, width):
         needed_points = finding_valleys_and_peaks(i, cwt)
         recurrent_functions.interpolation(needed_points)
-        area=recurrent_functions.calculate_area()
+        area = recurrent_functions.calculate_area()
         results.append([i, area])
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
@@ -76,6 +75,7 @@ def analysis_bar_graph_area(input_file, width, cwt):
     plt.title(input_file)
 
     plt.show()
+
 
 def analysis_bar_graph_distance(input_file, width, cwt):
     plt.close('all')
@@ -109,8 +109,6 @@ def analysis_bar_graph_distance(input_file, width, cwt):
     plt.show()
 
 
-
-
 def main():
     input_file = 'TCPREAL/slalom001kg.csv'
     width = 8
@@ -120,7 +118,7 @@ def main():
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
-    needed_points=finding_valleys_and_peaks(width, cwt)
+    needed_points = finding_valleys_and_peaks(width, cwt)
     recurrent_functions.interpolation(needed_points)
 
     recurrent_functions.calculate_area()
@@ -128,9 +126,10 @@ def main():
     recurrent_functions.residual_analysis_methods()
     recurrent_functions.t_testing()
 
-    #decomment to see full analysis
-    #width = 50
-    #analysis_bar_graphs(input_file, width, cwt)
+    # decomment to see full analysis
+    # width = 50
+    # analysis_bar_graphs(input_file, width, cwt)
+
 
 if __name__ == "__main__":
     main()
