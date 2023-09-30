@@ -10,13 +10,10 @@ import matplotlib.pyplot as plt
 global filtered_file
 global interpolated_file
 
-global processed_files
 processed_files = set()
 
-global children
 children = set()
 
-global point_when_exceeds
 point_when_exceeds = set()
 
 
@@ -40,11 +37,11 @@ def calculate_angle(filename, threshold: float):
     with open(filename, 'r') as f:
         mylist = [tuple(map(float, line.strip().split(','))) for line in f]
 
-        first_point_vector1 = mylist[0]
+        firts_point_vector1 = mylist[0]
         second_point_vector1 = mylist[1]
 
-        x_1 = first_point_vector1[0]
-        y_1 = first_point_vector1[1]
+        x_1 = firts_point_vector1[0]
+        y_1 = firts_point_vector1[1]
 
         x_2 = second_point_vector1[0]
         y_2 = second_point_vector1[1]
@@ -64,10 +61,10 @@ def calculate_angle(filename, threshold: float):
 
             vector1 = np.array([x_2 - x_1, y_2 - y_1])
             vector2 = np.array([x_4 - x_3, y_4 - y_3])
-
             angle_deg = calculate_vector_angle(vector1, vector2)
 
             if angle_deg > threshold:
+
                 filtered_data = []
                 with open(filtered_file, 'r') as file:
                     for line in file:
@@ -81,7 +78,7 @@ def calculate_angle(filename, threshold: float):
 
                 plt.scatter(x_filtered, y_filtered, marker='o', label='Filtered Data')
 
-                plt.scatter(first_point_vector1[0], first_point_vector1[1], marker='x', color='black',
+                plt.scatter(firts_point_vector1[0], firts_point_vector1[1], marker='x', color='black',
                             label='start')
                 plt.scatter(first_point_vector2[0], first_point_vector2[1], marker='o', color='red',
                             label='vector with deviation')
@@ -94,6 +91,7 @@ def calculate_angle(filename, threshold: float):
                 plt.title('Scatter Plot of Filtered Data with Additional Points')
 
                 plt.legend()
+                # plt.show()
 
                 half_len = len(mylist) // 2
                 first_half = mylist[:half_len]
@@ -107,20 +105,19 @@ def calculate_angle(filename, threshold: float):
                     for point in first_half:
                         f.write(','.join(str(x) for x in point) + '\n')
 
-                with open(second_filename, 'w') as f:
+                with open(second_filename, 'w') as g:
                     for point in second_half:
-                        f.write(','.join(str(x) for x in point) + '\n')
+                        g.write(','.join(str(x) for x in point) + '\n')
 
-                # recursive
                 calculate_angle(first_filename, threshold)
                 calculate_angle(second_filename, threshold)
 
                 timestep = i + x_1
                 point_when_exceeds.add(timestep)
-                return
+                return  # ne sum sig dali ne trqbva for da produlvi da se vurti
 
-            if not any_angle_from_all:  # kids that never have angle more than threshold
-                children.add(filename)
+        if not any_angle_from_all:  # kids that never have angle more than trashold
+            children.add(filename)
 
 
 def split_file(filename, threshold, size, split_technique):
@@ -148,7 +145,7 @@ def split_file(filename, threshold, size, split_technique):
 
     files_no_more_reparation = sorted(find_filenames_with_different_last_parts(children))
 
-    time_steps = []
+    timesteps = []
 
     for file in files_no_more_reparation:
         with open(file, 'r') as f:
@@ -179,6 +176,7 @@ def split_file(filename, threshold, size, split_technique):
                 vector2 = np.array([x_4 - x_3, y_4 - y_3])
 
                 angle_deg = calculate_vector_angle(vector1, vector2)
+
                 angles.append(angle_deg)
 
             if split_technique == 'median':
@@ -197,7 +195,7 @@ def split_file(filename, threshold, size, split_technique):
 
             actual_timestep = median_angle_index + 1 + x_1
 
-            time_steps.append(actual_timestep)
+            timesteps.append(actual_timestep)
 
     data = pd.read_csv(filtered_file)
 
@@ -207,11 +205,11 @@ def split_file(filename, threshold, size, split_technique):
     last_value = x[-1] * 1.0
 
     if split_technique != 'first point':
-        if first_value not in time_steps:
-            time_steps.append(first_value)
-        if last_value not in time_steps:
-            time_steps.append(last_value)
-        needed_points = sorted(list(set(time_steps)))
+        if first_value not in timesteps:
+            timesteps.append(first_value)
+        if last_value not in timesteps:
+            timesteps.append(last_value)
+        needed_points = sorted(list(set(timesteps)))
 
     else:
         if first_value not in point_when_exceeds:
@@ -223,6 +221,9 @@ def split_file(filename, threshold, size, split_technique):
     needed_points = [int(index) for index in needed_points]
     print(f'The number of needed points is {len(needed_points)}')
     recurrent_functions.interpolation(needed_points)
+
+    print(needed_points)
+    return needed_points
 
 
 def find_closest_index(lst, target):
@@ -337,24 +338,26 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
 
 def main():
     input_file = 'TCPREAL/slalom001kg.csv'
-    angle_threshold = 0.05
+    angle_threshold = 0.15
     split_pieces = 3
     dimension = 1
-    split_technique = 'mean'
+    split_technique = 'median'
 
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
 
-    split_file(filtered_file, angle_threshold, split_pieces, split_technique)
+    timesteps = split_file(filtered_file, angle_threshold, split_pieces, split_technique)
+    print(timesteps)
+
     recurrent_functions.calculate_area()
     recurrent_functions.calculate_distance()
     recurrent_functions.residual_analysis_methods()
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    # size=21
-    # analysis_bar_graphs(input_file, size, split_pieces, split_technique)
+    #size=21
+    #analysis_bar_graphs(input_file, size, split_pieces, split_technique)
 
 
 if __name__ == "__main__":

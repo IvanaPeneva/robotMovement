@@ -8,12 +8,14 @@ from scipy import stats
 output_file = 'filtered_output.csv'
 global filtered_file
 global needed_points_interpolation
+global interpolated_file
+global interpolated_continuous_file
 
 
-def process_data(input_file1, dimension):
-    calculated_dimention = dimension + 1
+def process_data(input_file, dimension):
+    calculated_dimension = dimension + 1
 
-    with open(input_file1, 'r') as file:
+    with open(input_file, 'r') as file:
         reader = csv.reader(file, delimiter='\t')
         rows = [row for row in reader]
 
@@ -30,7 +32,7 @@ def process_data(input_file1, dimension):
 
     data = pd.read_csv(output_file)
     data = data[data.iloc[:, 1] != 1]
-    data_filtered = data.iloc[:, [0, calculated_dimention]]
+    data_filtered = data.iloc[:, [0, calculated_dimension]]
     data_filtered.to_csv(output_file, index=False, header=None)
 
     global filtered_file
@@ -65,8 +67,6 @@ def interpolation(needed_points):
     interpolated_file = interpolated_data_output_file
 
 
-
-
 def make_data_continuous(interpolated_file):
     data = pd.read_csv(interpolated_file, header=None, names=['x', 'y'])
     data = data.sort_values(by='x')
@@ -81,6 +81,7 @@ def make_data_continuous(interpolated_file):
     continuous_data = pd.DataFrame({'x': continuous_x, 'y': continuous_y})
     continuous = 'interpolated_data_continuous.csv'
     continuous_data.to_csv(continuous, index=False, header=False)
+    print(len(continuous_data))
 
     global interpolated_continuous_file
     interpolated_continuous_file = continuous
@@ -91,9 +92,9 @@ def calculate_area():
     data2 = pd.read_csv(interpolated_file, header=None)
 
     make_data_continuous(interpolated_file)
-    continuous_data = pd.read_csv(interpolated_continuous_file, header=None, names=['x', 'y'])
 
-    y_values = continuous_data['y']
+    continuous_data = pd.read_csv(interpolated_continuous_file, header=None)
+    y_values = continuous_data.iloc[:, 1].values
     y_diff = np.abs(data1.iloc[:,
                     1] - y_values)
     # The area between the two graphs is defined as the integral of the absolute difference between their y-values with respect to x.
@@ -101,7 +102,6 @@ def calculate_area():
     area = np.trapz(y_diff, x=data1.iloc[:,
                               0])
     # x-values are used to determine the width of each trapezoid in our case=1 because each timestep
-
 
     fig, ax = plt.subplots()
     ax.plot(data1.iloc[:, 0], data1.iloc[:, 1], label=filtered_file)
@@ -127,13 +127,13 @@ def distance_from_point_to_regression_line(slope, intercept, x_segment, y_segmen
 
 def calculate_distance():
     distances = []
-    data1 = pd.read_csv(filtered_file, header=None)
 
     split_points = []
     with open(interpolated_file, 'r') as file:
         for line in file:
             time_step = int(line.split(',')[0])
             split_points.append(time_step)
+    print(split_points)
 
     with open(filtered_file, "r") as filtered:
         lines = filtered.readlines()
@@ -169,7 +169,6 @@ def calculate_distance():
                 slope = (y2 - y1) / (x2 - x1)
                 intercept = y1 - slope * x1
 
-
             for i in range(len(split_points) - 1):
                 start_point = split_points[i]
                 end_point = split_points[i + 1]
@@ -203,6 +202,8 @@ def calculate_distance():
         f"The biggest distance is: {max_distance} and is between point x: {x_max_distance} y:{corresponding_y} and intersects at x: {x_intersect} and y: {y_intersect} ")
     fig, ax = plt.subplots()
 
+    data1 = pd.read_csv(filtered_file, header=None)
+
     ax.plot(data1.iloc[:, 0], data1.iloc[:, 1], label=filtered_file)
 
     df1 = pd.read_csv(interpolated_file, header=None)
@@ -228,21 +229,8 @@ def calculate_distance():
 
 
 def residuals_plot():
-    data1 = []
-    with open(filtered_file, 'r') as expected_file:
-        for line_expected in expected_file:
-            parts_expected = line_expected.strip().split(',')
-            x_expected = float(parts_expected[0])
-            y_expected = float(parts_expected[1])
-            data1.append([x_expected, y_expected])
-
-    data2 = []
-    with open(interpolated_continuous_file, 'r') as observed_file:
-        for line_observed in observed_file:
-            parts_observed = line_observed.strip().split(',')
-            x_observed = float(parts_observed[0])
-            y_observed = float(parts_observed[1])
-            data2.append([x_observed, y_observed])
+    data1 = pd.read_csv(filtered_file, header=None)
+    data2 = pd.read_csv(interpolated_continuous_file, header=None)
 
     if len(data1) != len(data2):
         raise ValueError("Data1 and Data2 must have the same number of data points.")
@@ -286,23 +274,17 @@ def std_dev_residuals(residuals: object):
 
 
 def r_squared(residuals: object):
-    data2 = []
-    with open(interpolated_continuous_file, 'r') as observed_file:
-        for line_observed in observed_file:
-            # Split each line into tokens
-            parts_observed = line_observed.strip().split(',')
-            # Assuming your data format is (x, y)
-            x_observed = float(parts_observed[0])
-            y_observed = float(parts_observed[1])
-            data2.append([x_observed, y_observed])
+    data2 = pd.read_csv(interpolated_continuous_file, header=None)
+    y_observed = data2.iloc[:, 1]
 
-    # Assuming you have already populated data2 as a list of lists
-    data2 = np.array(data2)
+    y_mean = y_observed.mean()
 
-    y_mean = np.mean(data2[:, 1])  # Mean of observed values
-    ss_total = np.sum((data2[:, 1] - y_mean) ** 2)  # Total sum of squares
-    ss_residual = np.sum(residuals ** 2)  # Residual sum of squares
+    ss_total = ((y_observed - y_mean) ** 2).sum()
+
+    ss_residual = (residuals ** 2).sum()
+
     r_squared = 1 - (ss_residual / ss_total)
+
     print(f'Coefficient of Determination (R-squared): {r_squared}')
 
 
@@ -315,25 +297,15 @@ def residual_analysis_methods():
 
 
 def t_testing():
-    data1 = []
-    with open(filtered_file, 'r') as expected_file:
-        for line_expected in expected_file:
-            parts_expected = line_expected.strip().split(',')
-            x_expected = float(parts_expected[0])
-            y_expected = float(parts_expected[1])
-            data1.append([x_expected, y_expected])
+    # Read the data using pandas
+    data1 = pd.read_csv(filtered_file, header=None)
+    data2 = pd.read_csv(interpolated_continuous_file, header=None)
 
-    data2 = []
-    with open(interpolated_continuous_file, 'r') as observed_file:
-        for line_observed in observed_file:
-            parts_observed = line_observed.strip().split(',')
-            x_observed = float(parts_observed[0])
-            y_observed = float(parts_observed[1])
-            data2.append([x_observed, y_observed])
+    # Extract the relevant columns
+    y_expected = data1.iloc[:, 1]
+    y_observed = data2.iloc[:, 1]
 
-    y_expected = np.array([item[1] for item in data1])
-    y_observed = np.array([item[1] for item in data2])
-
+    # Perform the t-test
     t_statistic, p_value = stats.ttest_ind(y_expected, y_observed)
 
     alpha = 0.1
@@ -348,6 +320,3 @@ def t_testing():
     else:
         print("The p-value is greater than or equal to the chosen significance level (alpha).")
         print("We fail to reject the null hypothesis.")
-
-
-

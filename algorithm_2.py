@@ -111,7 +111,7 @@ def analysis_bar_graph_distance(input_file, width, cwt):
 
 def main():
     input_file = 'TCPREAL/slalom001kg.csv'
-    width = 8
+    width = 60
     dimension = 1
     cwt = True
 

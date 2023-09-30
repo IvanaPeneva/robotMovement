@@ -79,8 +79,8 @@ def analysis_bar_graph_distance(input_file, size):
 
 
 def main():
-    input_file = 'TCPREAL/fineU.csv'
-    points = 8
+    input_file = 'TCPREAL/bigU001kg.csv'
+    points = 15
     dimension = 1
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
