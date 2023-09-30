@@ -101,9 +101,9 @@ def calculate_angle(filename, threshold: float):
                 first_filename = base_filename + '_first' + ext
                 second_filename = base_filename + '_second' + ext
 
-                with open(first_filename, 'w') as f:
+                with open(first_filename, 'w') as h:
                     for point in first_half:
-                        f.write(','.join(str(x) for x in point) + '\n')
+                        h.write(','.join(str(x) for x in point) + '\n')
 
                 with open(second_filename, 'w') as g:
                     for point in second_half:
@@ -356,8 +356,8 @@ def main():
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    #size=21
-    #analysis_bar_graphs(input_file, size, split_pieces, split_technique)
+    # size=21
+    # analysis_bar_graphs(input_file, size, split_pieces, split_technique)
 
 
 if __name__ == "__main__":

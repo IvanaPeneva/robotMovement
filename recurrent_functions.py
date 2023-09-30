@@ -67,7 +67,7 @@ def interpolation(needed_points):
     interpolated_file = interpolated_data_output_file
 
 
-def make_data_continuous(interpolated_file):
+def make_data_continuous():
     data = pd.read_csv(interpolated_file, header=None, names=['x', 'y'])
     data = data.sort_values(by='x')
     first_x = data['x'].min() - 1
@@ -91,16 +91,16 @@ def calculate_area():
     data1 = pd.read_csv(filtered_file, header=None)
     data2 = pd.read_csv(interpolated_file, header=None)
 
-    make_data_continuous(interpolated_file)
+    make_data_continuous()
 
     continuous_data = pd.read_csv(interpolated_continuous_file, header=None)
     y_values = continuous_data.iloc[:, 1].values
     y_diff = np.abs(data1.iloc[:,
                     1] - y_values)
-    # The area between the two graphs is defined as the integral of the absolute difference between their y-values with respect to x.
+    # The area between the two graphs is defined as the integral of the absolute
+    # difference between their y-values with respect to x.
 
-    area = np.trapz(y_diff, x=data1.iloc[:,
-                              0])
+    area = np.trapz(y_diff, x=data1.iloc[:, 0])
     # x-values are used to determine the width of each trapezoid in our case=1 because each timestep
 
     fig, ax = plt.subplots()
@@ -199,7 +199,8 @@ def calculate_distance():
     corresponding_y = filtered_df.loc[filtered_df['x'] == x_max_distance, 'y'].values[0]
 
     print(
-        f"The biggest distance is: {max_distance} and is between point x: {x_max_distance} y:{corresponding_y} and intersects at x: {x_intersect} and y: {y_intersect} ")
+        f"The biggest distance is: {max_distance} and is between point x: {x_max_distance} "
+        f"y:{corresponding_y} and intersects at x: {x_intersect} and y: {y_intersect} ")
     fig, ax = plt.subplots()
 
     data1 = pd.read_csv(filtered_file, header=None)
@@ -253,8 +254,8 @@ def residuals_plot():
 
 def mae(residuals: object):
     # MAE measures the average absolute difference between the observed and expected values.
-    mae = np.mean(np.abs(residuals))
-    print(f'Mean Absolute Error (MAE): {mae}')
+    mae_calculation = np.mean(np.abs(residuals))
+    print(f'Mean Absolute Error (MAE): {mae_calculation}')
 
 
 def mse_and_rmse(residuals: object):
@@ -262,15 +263,16 @@ def mse_and_rmse(residuals: object):
     # MSE tends to penalize larger errors more severely than smaller errors.
     mse = np.mean(residuals ** 2)
     print(f'Mean Squared Error (MSE): {mse}')
-    # RMSE is the square root of MSE and provides a measure of the typical magnitude of errors in the same units as the data.
+    # RMSE is the square root of MSE and provides a
+    # measure of the typical magnitude of errors in the same units as the data.
     rmse = np.sqrt(mse)
     print(f'Root Mean Squared Error (RMSE): {rmse}')
 
 
 def std_dev_residuals(residuals: object):
     # The standard deviation of residuals measures the spread or variability of residuals around zero.
-    std_dev_residuals = np.std(residuals)
-    print(f'Standard Deviation of Residuals: {std_dev_residuals}')
+    std_dev_residuals_calculation = np.std(residuals)
+    print(f'Standard Deviation of Residuals: {std_dev_residuals_calculation}')
 
 
 def r_squared(residuals: object):
@@ -283,9 +285,9 @@ def r_squared(residuals: object):
 
     ss_residual = (residuals ** 2).sum()
 
-    r_squared = 1 - (ss_residual / ss_total)
+    r_squared_calculation = 1 - (ss_residual / ss_total)
 
-    print(f'Coefficient of Determination (R-squared): {r_squared}')
+    print(f'Coefficient of Determination (R-squared): {r_squared_calculation}')
 
 
 def residual_analysis_methods():
