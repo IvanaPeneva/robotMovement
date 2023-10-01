@@ -16,6 +16,8 @@ children = set()
 
 point_when_exceeds = set()
 
+file_with_angles = []
+
 
 def calculate_vector_angle(vector1, vector2):
     dot_product = np.dot(vector1, vector2)
@@ -27,29 +29,22 @@ def calculate_vector_angle(vector1, vector2):
     return angle_deg
 
 
-def calculate_angle(filename, threshold: float):
-    if filename in processed_files:
-        # print(f"{filename} has already been processed. Skipping.")
-        return
-
-    processed_files.add(filename)
-
-    with open(filename, 'r') as f:
+def make_angles_list(file):
+    angles = [file]
+    with open(file, 'r') as f:
         mylist = [tuple(map(float, line.strip().split(','))) for line in f]
+        angles.append(mylist)
 
-        firts_point_vector1 = mylist[0]
+        first_point_vector1 = mylist[0]
         second_point_vector1 = mylist[1]
 
-        x_1 = firts_point_vector1[0]
-        y_1 = firts_point_vector1[1]
+        x_1 = first_point_vector1[0]
+        y_1 = first_point_vector1[1]
 
         x_2 = second_point_vector1[0]
         y_2 = second_point_vector1[1]
 
-        any_angle_from_all = False
-
         for i in range(1, len(mylist) - 2):
-
             first_point_vector2 = mylist[i]
             second_point_vector2 = mylist[i + 1]
 
@@ -61,63 +56,55 @@ def calculate_angle(filename, threshold: float):
 
             vector1 = np.array([x_2 - x_1, y_2 - y_1])
             vector2 = np.array([x_4 - x_3, y_4 - y_3])
+
             angle_deg = calculate_vector_angle(vector1, vector2)
 
-            if angle_deg > threshold:
+            angles.append(angle_deg)
 
-                filtered_data = []
-                with open(filtered_file, 'r') as file:
-                    for line in file:
-                        values = line.strip().split(',')
-                        x = float(values[0])
-                        y = float(values[1])
-                        filtered_data.append((x, y))
+    return angles
 
-                x_filtered = [point[0] for point in filtered_data]
-                y_filtered = [point[1] for point in filtered_data]
 
-                plt.scatter(x_filtered, y_filtered, marker='o', label='Filtered Data')
+def calculate_angle(filename, threshold: float):
+    if filename in processed_files:
+        # print(f"{filename} has already been processed. Skipping.")
+        return
 
-                plt.scatter(firts_point_vector1[0], firts_point_vector1[1], marker='x', color='black',
-                            label='start')
-                plt.scatter(first_point_vector2[0], first_point_vector2[1], marker='o', color='red',
-                            label='vector with deviation')
+    processed_files.add(filename)
 
-                plt.scatter(mylist[-1][0], mylist[-1][1], marker='x', color='black',
-                            label='end')
+    angles = make_angles_list(filename)
+    file_with_angles.append(angles)
+    mylist = angles[1]
+    first_point_vector1 = mylist[0]
+    x_1 = first_point_vector1[0]
 
-                plt.xlabel('time steps')
-                plt.ylabel('Y Values')
-                plt.title('Scatter Plot of Filtered Data with Additional Points')
+    only_angles = angles[2:]
 
-                plt.legend()
-                # plt.show()
+    for k in range (len(only_angles)):
+        if only_angles[k] > threshold:
+            timestep = k + x_1 + 1
+            point_when_exceeds.add(timestep)
 
-                half_len = len(mylist) // 2
-                first_half = mylist[:half_len]
-                second_half = mylist[half_len:]
+            half_len = len(mylist) // 2
+            first_half = mylist[:half_len]
+            second_half = mylist[half_len:]
 
-                base_filename, ext = os.path.splitext(filename)
-                first_filename = base_filename + '_first' + ext
-                second_filename = base_filename + '_second' + ext
+            base_filename, ext = os.path.splitext(filename)
+            first_filename = base_filename + '_first' + ext
+            second_filename = base_filename + '_second' + ext
 
-                with open(first_filename, 'w') as h:
-                    for point in first_half:
-                        h.write(','.join(str(x) for x in point) + '\n')
+            with open(first_filename, 'w') as h:
+                for point in first_half:
+                    h.write(','.join(str(x) for x in point) + '\n')
 
-                with open(second_filename, 'w') as g:
-                    for point in second_half:
-                        g.write(','.join(str(x) for x in point) + '\n')
+            with open(second_filename, 'w') as g:
+                for point in second_half:
+                    g.write(','.join(str(x) for x in point) + '\n')
+            calculate_angle(first_filename, threshold)
+            calculate_angle(second_filename, threshold)
+            return
 
-                calculate_angle(first_filename, threshold)
-                calculate_angle(second_filename, threshold)
-
-                timestep = i + x_1
-                point_when_exceeds.add(timestep)
-                return  # ne sum sig dali ne trqbva for da produlvi da se vurti
-
-        if not any_angle_from_all:  # kids that never have angle more than trashold
-            children.add(filename)
+    # kids that never have angle more than threshold
+    children.add(filename)
 
 
 def split_file(filename, threshold, size, split_technique):
@@ -143,59 +130,37 @@ def split_file(filename, threshold, size, split_technique):
 
         calculate_angle(part_filename, threshold)
 
+
     files_no_more_reparation = sorted(find_filenames_with_different_last_parts(children))
 
-    timesteps = []
+    time_steps = []
 
-    for file in files_no_more_reparation:
-        with open(file, 'r') as f:
-            mylist = [tuple(map(float, line.strip().split(','))) for line in f]
-
-            angles = []
-
+    for no_separation_files in files_no_more_reparation:
+        for files in file_with_angles:
+            file_name=files[0]
+            mylist=files[1]
             first_point_vector1 = mylist[0]
-            second_point_vector1 = mylist[1]
+            x_1 = int(first_point_vector1[0])
 
-            x_1 = first_point_vector1[0]
-            y_1 = first_point_vector1[1]
+            angles=files[2:]
+            if file_name == no_separation_files:
+                if split_technique == 'median':
+                    searched_angle = statistics.median(angles)
+                elif split_technique == 'mean' or split_technique == 'first point':
+                    searched_angle = statistics.mean(angles)
+                elif split_technique == 'max':
+                    searched_angle = max(angles)
+                elif split_technique == 'random':
+                    random_index = random.randint(0, len(angles) - 1)
+                    searched_angle = angles[random_index]
+                else:
+                    raise ValueError("Invalid string value: " + split_technique)
 
-            x_2 = second_point_vector1[0]
-            y_2 = second_point_vector1[1]
+                median_angle_index = find_closest_index(angles, searched_angle)
 
-            for i in range(1, len(mylist) - 2):
-                first_point_vector2 = mylist[i]
-                second_point_vector2 = mylist[i + 1]
+                actual_timestep = median_angle_index + 1 + x_1
 
-                x_3 = first_point_vector2[0]
-                y_3 = first_point_vector2[1]
-
-                x_4 = second_point_vector2[0]
-                y_4 = second_point_vector2[1]
-
-                vector1 = np.array([x_2 - x_1, y_2 - y_1])
-                vector2 = np.array([x_4 - x_3, y_4 - y_3])
-
-                angle_deg = calculate_vector_angle(vector1, vector2)
-
-                angles.append(angle_deg)
-
-            if split_technique == 'median':
-                searched_angle = statistics.median(angles)
-            elif split_technique == 'mean' or split_technique == 'first point':
-                searched_angle = statistics.mean(angles)
-            elif split_technique == 'max':
-                searched_angle = max(angles)
-            elif split_technique == 'random':
-                random_index = random.randint(0, len(angles) - 1)
-                searched_angle = angles[random_index]
-            else:
-                raise ValueError("Invalid string value: " + split_technique)
-
-            median_angle_index = find_closest_index(angles, searched_angle)
-
-            actual_timestep = median_angle_index + 1 + x_1
-
-            timesteps.append(actual_timestep)
+                time_steps.append(actual_timestep)
 
     data = pd.read_csv(filtered_file)
 
@@ -205,11 +170,11 @@ def split_file(filename, threshold, size, split_technique):
     last_value = x[-1] * 1.0
 
     if split_technique != 'first point':
-        if first_value not in timesteps:
-            timesteps.append(first_value)
-        if last_value not in timesteps:
-            timesteps.append(last_value)
-        needed_points = sorted(list(set(timesteps)))
+        if first_value not in time_steps:
+            time_steps.append(first_value)
+        if last_value not in time_steps:
+            time_steps.append(last_value)
+        needed_points = sorted(list(set(time_steps)))
 
     else:
         if first_value not in point_when_exceeds:
@@ -337,7 +302,7 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
 
 
 def main():
-    input_file = 'TCPREAL/slalom001kg.csv'
+    input_file = 'TCPREAL/bigU001kg.csv'
     angle_threshold = 0.15
     split_pieces = 3
     dimension = 1
@@ -347,8 +312,8 @@ def main():
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
 
-    timesteps = split_file(filtered_file, angle_threshold, split_pieces, split_technique)
-    print(timesteps)
+    time_steps = split_file(filtered_file, angle_threshold, split_pieces, split_technique)
+    print(time_steps)
 
     recurrent_functions.calculate_area()
     recurrent_functions.calculate_distance()
@@ -356,8 +321,8 @@ def main():
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    # size=21
-    # analysis_bar_graphs(input_file, size, split_pieces, split_technique)
+    #size=21
+    #analysis_bar_graphs(input_file, size, split_pieces, split_technique)
 
 
 if __name__ == "__main__":
