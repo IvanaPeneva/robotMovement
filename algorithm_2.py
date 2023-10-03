@@ -118,6 +118,8 @@ def main():
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
+    recurrent_functions.calculate_length()
+
     needed_points = finding_valleys_and_peaks(width, cwt)
     recurrent_functions.interpolation(needed_points)
 

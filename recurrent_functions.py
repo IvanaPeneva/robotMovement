@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy import stats
+import math
 
 output_file = 'filtered_output.csv'
 global filtered_file
@@ -322,3 +323,19 @@ def t_testing():
     else:
         print("The p-value is greater than or equal to the chosen significance level (alpha).")
         print("We fail to reject the null hypothesis.")
+
+
+def calculate_length():
+    total_length = 0
+    prev_point = None
+
+    with open(filtered_file, 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            x, y = map(float, row)
+            if prev_point is not None:
+                distance = math.sqrt((x - prev_point[0]) ** 2 + (y - prev_point[1]) ** 2)
+                total_length += distance
+            prev_point = (x, y)
+
+    print(f'Total length of the curve: {total_length}')

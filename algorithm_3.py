@@ -79,6 +79,7 @@ def calculate_angle(filename, threshold: float):
 
     only_angles = angles[2:]
 
+
     for k in range (len(only_angles)):
         if only_angles[k] > threshold:
             timestep = k + x_1 + 1
@@ -137,8 +138,8 @@ def split_file(filename, threshold, size, split_technique):
 
     for no_separation_files in files_no_more_reparation:
         for files in file_with_angles:
-            file_name=files[0]
-            mylist=files[1]
+            file_name = files[0]
+            mylist = files[1]
             first_point_vector1 = mylist[0]
             x_1 = int(first_point_vector1[0])
 
@@ -303,7 +304,7 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
 
 def main():
     input_file = 'TCPREAL/bigU001kg.csv'
-    angle_threshold = 0.15
+    angle_threshold = 0.1
     split_pieces = 3
     dimension = 1
     split_technique = 'median'
@@ -311,6 +312,7 @@ def main():
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
+    recurrent_functions.calculate_length()
 
     time_steps = split_file(filtered_file, angle_threshold, split_pieces, split_technique)
     print(time_steps)

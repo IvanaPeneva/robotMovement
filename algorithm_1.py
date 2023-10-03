@@ -3,6 +3,7 @@ import numpy as np
 import recurrent_functions
 import csv
 import matplotlib.pyplot as plt
+import math
 
 global filtered_file
 global interpolated_file
@@ -79,12 +80,14 @@ def analysis_bar_graph_distance(input_file, size):
 
 
 def main():
-    input_file = 'TCPREAL/bigU001kg.csv'
+    input_file = 'TCPREAL/fineU.csv'
     points = 15
     dimension = 1
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
+    recurrent_functions.calculate_length()
+
     needed_points = find_points(points)
     recurrent_functions.interpolation(needed_points)
     recurrent_functions.calculate_area()
