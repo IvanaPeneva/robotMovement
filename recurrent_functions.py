@@ -39,19 +39,19 @@ def process_data(input_file, dimension):
     global filtered_file
     filtered_file = output_file
 
-    # Save the filtered data without header
     data_filtered.to_csv(output_file, index=False, header=None)
 
-    # Read the content of the new output file
     with open(output_file, 'r') as file:
         lines = file.readlines()
 
-    # Write all lines except the first one
     with open(output_file, 'w') as file:
         file.writelines(lines[1:])
 
 
 def interpolation(needed_points):
+    print(f'The number of needed points is {len(needed_points)}')
+    print(f'The interpolation points are: {needed_points}')
+
     data = pd.read_csv(filtered_file)
 
     x = data.iloc[:, 0].values
@@ -82,7 +82,6 @@ def make_data_continuous():
     continuous_data = pd.DataFrame({'x': continuous_x, 'y': continuous_y})
     continuous = 'interpolated_data_continuous.csv'
     continuous_data.to_csv(continuous, index=False, header=False)
-    print(len(continuous_data))
 
     global interpolated_continuous_file
     interpolated_continuous_file = continuous
@@ -134,7 +133,6 @@ def calculate_distance():
         for line in file:
             time_step = int(line.split(',')[0])
             split_points.append(time_step)
-    print(split_points)
 
     with open(filtered_file, "r") as filtered:
         lines = filtered.readlines()
@@ -279,11 +277,9 @@ def std_dev_residuals(residuals: object):
 def r_squared(residuals: object):
     data2 = pd.read_csv(interpolated_continuous_file, header=None)
     y_observed = data2.iloc[:, 1]
-
     y_mean = y_observed.mean()
 
     ss_total = ((y_observed - y_mean) ** 2).sum()
-
     ss_residual = (residuals ** 2).sum()
 
     r_squared_calculation = 1 - (ss_residual / ss_total)
@@ -300,15 +296,12 @@ def residual_analysis_methods():
 
 
 def t_testing():
-    # Read the data using pandas
     data1 = pd.read_csv(filtered_file, header=None)
     data2 = pd.read_csv(interpolated_continuous_file, header=None)
 
-    # Extract the relevant columns
     y_expected = data1.iloc[:, 1]
     y_observed = data2.iloc[:, 1]
 
-    # Perform the t-test
     t_statistic, p_value = stats.ttest_ind(y_expected, y_observed)
 
     alpha = 0.1

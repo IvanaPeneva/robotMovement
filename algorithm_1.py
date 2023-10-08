@@ -3,7 +3,6 @@ import numpy as np
 import recurrent_functions
 import csv
 import matplotlib.pyplot as plt
-import math
 
 global filtered_file
 global interpolated_file
@@ -25,18 +24,19 @@ def analysis_bar_graphs(input_file, size):
 
 def analysis_bar_graph_area(input_file, size):
     results = []
+
     for i in range(2, size):
         needed_points = find_points(i)
         recurrent_functions.interpolation(needed_points)
         area = recurrent_functions.calculate_area()
         results.append([i, area])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
     plt.xticks(range(0, size))
 
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
@@ -53,18 +53,19 @@ def analysis_bar_graph_area(input_file, size):
 
 def analysis_bar_graph_distance(input_file, size):
     results = []
+
     for i in range(2, size):
         needed_points = find_points(i)
         recurrent_functions.interpolation(needed_points)
         distance = recurrent_functions.calculate_distance()
         results.append([i, distance])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
     plt.xticks(range(0, size))
 
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
@@ -83,6 +84,7 @@ def main():
     input_file = 'TCPREAL/fineU.csv'
     points = 15
     dimension = 1
+
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
@@ -96,7 +98,7 @@ def main():
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    # size=16
+    # size = 16
     # analysis_bar_graphs(input_file,size)
 
 

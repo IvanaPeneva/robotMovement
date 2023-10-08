@@ -21,11 +21,14 @@ file_with_angles = []
 
 def calculate_vector_angle(vector1, vector2):
     dot_product = np.dot(vector1, vector2)
+
     magnitude1 = np.linalg.norm(vector1)
     magnitude2 = np.linalg.norm(vector2)
+
     cosine_angle = dot_product / (magnitude1 * magnitude2)
     angle_rad = np.arccos(cosine_angle)
     angle_deg = np.degrees(angle_rad)
+
     return angle_deg
 
 
@@ -79,8 +82,7 @@ def calculate_angle(filename, threshold: float):
 
     only_angles = angles[2:]
 
-
-    for k in range (len(only_angles)):
+    for k in range(len(only_angles)):
         if only_angles[k] > threshold:
             timestep = k + x_1 + 1
             point_when_exceeds.add(timestep)
@@ -131,7 +133,6 @@ def split_file(filename, threshold, size, split_technique):
 
         calculate_angle(part_filename, threshold)
 
-
     files_no_more_reparation = sorted(find_filenames_with_different_last_parts(children))
 
     time_steps = []
@@ -143,7 +144,7 @@ def split_file(filename, threshold, size, split_technique):
             first_point_vector1 = mylist[0]
             x_1 = int(first_point_vector1[0])
 
-            angles=files[2:]
+            angles = files[2:]
             if file_name == no_separation_files:
                 if split_technique == 'median':
                     searched_angle = statistics.median(angles)
@@ -185,10 +186,8 @@ def split_file(filename, threshold, size, split_technique):
 
         needed_points = sorted(list(set(point_when_exceeds)))
     needed_points = [int(index) for index in needed_points]
-    print(f'The number of needed points is {len(needed_points)}')
     recurrent_functions.interpolation(needed_points)
 
-    print(needed_points)
     return needed_points
 
 
@@ -234,9 +233,9 @@ def analysis_bar_graphs(input_file, size, split_pieces, split_technique):
 
 def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
     results = []
+
     for value in range(1, size, 1):
         decimal_value = value / 100.0
-        print(decimal_value)
         split_file(filtered_file, decimal_value, split_pieces, split_technique)
         area = recurrent_functions.calculate_area()
         global processed_files
@@ -246,13 +245,13 @@ def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
         global point_when_exceeds
         point_when_exceeds = set()
         results.append([value, area])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
     plt.xticks(range(0, size))
 
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
@@ -260,7 +259,7 @@ def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
     for i in range(len(data.iloc[:, 0])):
         plt.text(x=data.iloc[i, 0], y=data.iloc[i, 1] + 0.5, s=round(data.iloc[i, 1], 2), ha='center')
 
-    plt.xlabel('Number of points')
+    plt.xlabel('Angle threshold multiplied by 100')
     plt.ylabel('Area between graphs')
     plt.title(input_file)
 
@@ -269,9 +268,9 @@ def analysis_bar_graph_area(input_file, size, split_pieces, split_technique):
 
 def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique):
     results = []
+
     for value in range(1, size, 1):
         decimal_value = value / 100.0
-        print(decimal_value)
         split_file(filtered_file, decimal_value, split_pieces, split_technique)
         distance = recurrent_functions.calculate_distance()
         global processed_files
@@ -281,13 +280,13 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
         global point_when_exceeds
         point_when_exceeds = set()
         results.append([value, distance])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
     plt.xticks(range(0, size))
 
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
@@ -295,7 +294,7 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
     for i in range(len(data.iloc[:, 0])):
         plt.text(x=data.iloc[i, 0], y=data.iloc[i, 1] + 0.5, s=round(data.iloc[i, 1], 2), ha='center')
 
-    plt.xlabel('Number of points')
+    plt.xlabel('Angle threshold multiplied by 100')
     plt.ylabel('Max Distance between graphs')
     plt.title(input_file)
 
@@ -303,28 +302,28 @@ def analysis_bar_graph_distance(input_file, size, split_pieces, split_technique)
 
 
 def main():
-    input_file = 'TCPREAL/bigU001kg.csv'
+    input_file = 'TCPREAL/bigU.csv'
     angle_threshold = 0.1
     split_pieces = 3
     dimension = 1
-    split_technique = 'median'
+
+    # for split technique choose between mean, median, first point and max
+    split_technique = 'mean'
 
     recurrent_functions.process_data(input_file, dimension)
     global filtered_file
     filtered_file = recurrent_functions.filtered_file
     recurrent_functions.calculate_length()
 
-    time_steps = split_file(filtered_file, angle_threshold, split_pieces, split_technique)
-    print(time_steps)
-
+    split_file(filtered_file, angle_threshold, split_pieces, split_technique)
     recurrent_functions.calculate_area()
     recurrent_functions.calculate_distance()
     recurrent_functions.residual_analysis_methods()
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    #size=21
-    #analysis_bar_graphs(input_file, size, split_pieces, split_technique)
+    # size = 21
+    # analysis_bar_graphs(input_file, size, split_pieces, split_technique)
 
 
 if __name__ == "__main__":

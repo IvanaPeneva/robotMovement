@@ -45,64 +45,80 @@ def finding_valleys_and_peaks(threshold, cwt):
 
 
 def analysis_bar_graphs(input_file, width, cwt):
+    analysis_bar_graph_points(input_file, width, cwt)
     analysis_bar_graph_area(input_file, width, cwt)
     analysis_bar_graph_distance(input_file, width, cwt)
 
 
 def analysis_bar_graph_area(input_file, width, cwt):
     results = []
+
     for i in range(10, width):
         needed_points = finding_valleys_and_peaks(i, cwt)
         recurrent_functions.interpolation(needed_points)
         area = recurrent_functions.calculate_area()
         results.append([i, area])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
-    plt.xticks(range(0, width))
-
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
 
-    for i in range(len(data.iloc[:, 0])):
-        plt.text(x=data.iloc[i, 0], y=data.iloc[i, 1] + 0.5, s=round(data.iloc[i, 1], 2), ha='center')
-
-    plt.xlabel('Number of points')
+    plt.xlabel('Width')
     plt.ylabel('Area between graphs')
     plt.title(input_file)
 
     plt.show()
 
 
-def analysis_bar_graph_distance(input_file, width, cwt):
-    plt.close('all')
+def analysis_bar_graph_points(input_file, width, cwt):
     results = []
+
     for i in range(10, width):
         needed_points = finding_valleys_and_peaks(i, cwt)
-        recurrent_functions.interpolation(needed_points)
-        distance = recurrent_functions.calculate_distance()
-        results.append([i, distance])
-    with open('results.csv', 'w') as file:
-        writer = csv.writer(file)
-        writer.writerows(results)
+        points = len(needed_points)
+        results.append([i, points])
+
     with open('results.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerows(results)
 
     data = pd.read_csv('results.csv', header=None)
 
-    plt.close('all')
-    plt.xticks(range(0, width))
+    plt.bar(data.iloc[:, 0], data.iloc[:, 1])
+
+    plt.xlabel('Width')
+    plt.ylabel('Number of points')
+    plt.title(input_file)
+
+    plt.show()
+
+
+def analysis_bar_graph_distance(input_file, width, cwt):
+    results = []
+
+    for i in range(10, width):
+        needed_points = finding_valleys_and_peaks(i, cwt)
+        recurrent_functions.interpolation(needed_points)
+        distance = recurrent_functions.calculate_distance()
+        results.append([i, distance])
+
+    with open('results.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerows(results)
+
+    with open('results.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerows(results)
+
+    data = pd.read_csv('results.csv', header=None)
 
     plt.bar(data.iloc[:, 0], data.iloc[:, 1])
 
-    for i in range(len(data.iloc[:, 0])):
-        plt.text(x=data.iloc[i, 0], y=data.iloc[i, 1] + 0.5, s=round(data.iloc[i, 1], 2), ha='center')
-
-    plt.xlabel('Number of points')
+    plt.xlabel('Width')
     plt.ylabel('Distance between graphs')
     plt.title(input_file)
 
@@ -110,7 +126,7 @@ def analysis_bar_graph_distance(input_file, width, cwt):
 
 
 def main():
-    input_file = 'TCPREAL/slalom001kg.csv'
+    input_file = 'TCPREAL/slalom.csv'
     width = 60
     dimension = 1
     cwt = True
@@ -122,14 +138,13 @@ def main():
 
     needed_points = finding_valleys_and_peaks(width, cwt)
     recurrent_functions.interpolation(needed_points)
-
     recurrent_functions.calculate_area()
     recurrent_functions.calculate_distance()
     recurrent_functions.residual_analysis_methods()
     recurrent_functions.t_testing()
 
     # decomment to see full analysis
-    # width = 50
+    # width = 30
     # analysis_bar_graphs(input_file, width, cwt)
 
 
